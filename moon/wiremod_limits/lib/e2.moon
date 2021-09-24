@@ -14,7 +14,7 @@ e2.throttleGroup = (signatures, delay, message) ->
     group = "limit_group_#{groupID!}"
 
     funcs = wire_expression2_funcs
-    originals = {[s]: funcs[s][3] for s in *signatures}
+    originals = {s, funcs[s][3] for s in *signatures}
 
     makeThrottler = (sig) -> (args) =>
         @player.E2Throttle or= {}
