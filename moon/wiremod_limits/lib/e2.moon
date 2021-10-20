@@ -1,4 +1,5 @@
 import CurTime from _G
+import min, floor from math
 
 CFCWiremodLimits.E2 = {}
 e2 = CFCWiremodLimits.E2
@@ -10,23 +11,37 @@ groupID = ->
 
 -- Impose a throttle on a group of signatures
 -- All signatures share the same throttle
-e2.throttleGroup = (signatures, delay, message) ->
-    group = "limit_group_#{groupID!}"
+e2.throttleGroup = (signatures, delay, burstBudget=0, message=nil) ->
+    groupName = "limit_group_#{groupID!}"
 
     funcs = wire_expression2_funcs
     originals = {s, funcs[s][3] for s in *signatures}
 
     makeThrottler = (sig) -> (args) =>
         @player.E2Throttle or= {}
-        @player.E2Throttle[group] or= 0
+        @player.E2Throttle[groupName] or= {
+            budget: burstBudget
+            lastUse: 0
+        }
 
         now = CurTime!
+        group = @player.E2Throttle[groupName]
 
-        if now - @player.E2Throttle[group] < delay
+        -- Refill budget
+        sinceLastUse = now - group.lastUse
+        group.budget = min(group.budget + floor(sinceLastUse), burstBudget)
+
+        if group.budget > 0
+            group.budget -= 1
+            group.lastUse = now
+            return originals[sig](self, args)
+
+        -- Has no budget, back to throttling
+        if sinceLastUse < delay
             @player\ChatPrint(message) if message
             return false
 
-        @player.E2Throttle[group] = now
+        group.lastUse = now
         return originals[sig](self, args)
 
     funcs[sig][3] = makeThrottler sig for sig in *signatures

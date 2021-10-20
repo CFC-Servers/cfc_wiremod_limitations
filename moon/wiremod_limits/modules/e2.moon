@@ -1,6 +1,9 @@
 import E2 from CFCWiremodLimits
 
 do
+    delay = 0.15
+    burstBudget = 10
+
     holoScale = {
         "holoScale(nv)"
         "holoBoneScale(nnv)"
@@ -8,9 +11,12 @@ do
         "holoScaleUnits(nv)"
     }
 
-    E2.throttleGroup holoScale, 0.025
+    E2.throttleGroup holoScale, delay, burstBudget
 
 do
+    delay = 0.15
+    burstBudget = 10
+
     holoClip = {
         "holoClip(nnvvn)"
         "holoClip(nvvn)"
@@ -18,4 +24,4 @@ do
         "holoClip(nvve)"
     }
 
-    E2.throttleGroup holoClip, 0.025
+    E2.throttleGroup holoClip, delay, burstBudget
