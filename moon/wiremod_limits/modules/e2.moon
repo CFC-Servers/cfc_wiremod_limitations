@@ -8,7 +8,7 @@ do
         "holoScaleUnits(nv)"
     }
 
-    E2.throttleGroup holoScale, 0.15
+    E2.throttleGroup holoScale, 0.025
 
 do
     holoClip = {
@@ -18,4 +18,4 @@ do
         "holoClip(nvve)"
     }
 
-    E2.throttleGroup holoClip, 0.15
+    E2.throttleGroup holoClip, 0.025
