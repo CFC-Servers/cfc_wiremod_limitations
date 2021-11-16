@@ -18,6 +18,9 @@ e2.throttleGroup = (signatures, delay, burstBudget=0, message=nil) ->
     originals = {s, funcs[s][3] for s in *signatures}
 
     makeThrottler = (sig) -> (args) =>
+        og = -> originals[sig](self, args)
+        return og if @player\IsAdmin!
+
         @player.E2Throttle or= {}
         @player.E2Throttle[groupName] or= {
             budget: burstBudget
@@ -34,7 +37,7 @@ e2.throttleGroup = (signatures, delay, burstBudget=0, message=nil) ->
         if group.budget > 0
             group.budget -= 1
             group.lastUse = now
-            return originals[sig](self, args)
+            return og
 
         -- Has no budget, back to throttling
         if sinceLastUse < delay
@@ -42,7 +45,7 @@ e2.throttleGroup = (signatures, delay, burstBudget=0, message=nil) ->
             return false
 
         group.lastUse = now
-        return originals[sig](self, args)
+        return og
 
     funcs[sig][3] = makeThrottler sig for sig in *signatures
 
