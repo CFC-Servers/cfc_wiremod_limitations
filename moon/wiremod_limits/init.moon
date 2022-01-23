@@ -1,4 +1,6 @@
-export CFCWiremodLimits = {}
+export CFCWiremodLimits = {
+    Lib: {}
+}
 
 include "lib/e2.lua"
 
