@@ -11,6 +11,8 @@ do
         "holoScaleUnits(nv)"
     }
 
+    shouldSkip = => return true if @player\IsAdmin!
+
     E2.throttleGroup holoScale, delay, burstBudget
 
 do
