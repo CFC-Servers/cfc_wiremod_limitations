@@ -2,6 +2,7 @@ export CFCWiremodLimits = {
     Lib: {}
 }
 
+include "lib/throttle.lua"
 include "lib/e2.lua"
 
 hook.Add "InitPostEntity", "CFC_WiremodLimits_LoadModules", ->
