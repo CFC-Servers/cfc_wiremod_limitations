@@ -1,4 +1,4 @@
-import isentity, istable CurTime from _G
+import isentity, istable, CurTime from _G
 import min from math
 
 noop = ->
@@ -58,13 +58,13 @@ lib.wrapWithThrottle = (
         -- Perform adjustments
         if adjustParams
             adjustments = adjustParams ...
-
             delay = adjustments.delay or delay
             budget = adjustments.budget or budget
             refillRate = adjustments.refillRate or refillRate
 
-        -- If ent is an entity, use it, otherwise call it as a function with the given params
-        ent = isentity(ent) and ent or ent ...
+        -- If ent is an entity or table, use it, otherwise call it as a function with the given params
+        canStore = isentity(ent) or istable(ent)
+        ent = canStore and ent or ent ...
 
         ent._Throttles or= {}
         ent._Throttles[id] or= {
@@ -76,23 +76,23 @@ lib.wrapWithThrottle = (
         throttle = ent._Throttles[id]
 
         -- Refill the budget
-        sinceLastUse = now - group.lastUse
+        sinceLastUse = now - throttle.lastUse
         refillAmount = sinceLastUse * refillRate
         throttle.budget = min(throttle.budget + refillAmount, budget)
 
         -- Has budget, can use
-        if throttle.budget > 0
+        if throttle.budget >= 1
+            print "You got budget homie", throttle.budget
             throttle.budget -= 1
             throttle.lastUse = now
             return succeed!
 
         -- Blocked by delay
-        if sinceLastUse < delay
-            fail!
-            return false
+        return fail! if sinceLastUse < delay
 
         -- No budget, but has waited long enough since the last use
         throttle.lastUse = now
+        print "No budget, but waited long enough since last use"
         return succeed!
 
 -- When wrapping a method on an entity, store the budget on the ent that is received in the call

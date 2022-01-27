@@ -1,4 +1,4 @@
-import E2 from CFCWiremodLimits
+import E2 from CFCWiremodLimits.Lib
 
 do
     delay = 0.15

@@ -20,10 +20,16 @@ e2.throttleGroup = (signatures, delay=1, budget=1, refillRate=1, alertFailure=tr
         id = groupName
         success = originals[sig]
 
-        if alertFailure
-            failure = =>
-                @player\ChatPrint "'#{sig}' was rate-limited! You must wait #{delay} seconds between executions (or wait for your burst budget to refill)"
-                @player\ChatPrint "(Burst Budget: #{budget} | Refill Rate: #{refillRate}/second)"
+        failure = alertFailure and =>
+            @player.ThrottleAlerts or= {}
+
+            now = os.time!
+            lastAlert = @player.ThrottleAlerts[id]
+            return if lastAlert and lastAlert > (now - 3)
+
+            @player\ChatPrint "'#{sig}' was rate-limited! You must wait #{delay} seconds between executions (or wait for your burst budget to refill)"
+            @player\ChatPrint "(Burst Budget: #{budget} | Refill Rate: #{refillRate}/second)"
+            @player.ThrottleAlerts[id] = now
 
         wrapEntWithThrottle id, delay, budget, refillRate, success, failure, shouldSkip, adjustParams
 
@@ -36,4 +42,4 @@ e2.throttleFunc = (signature, delay, message) ->
 -- Throttle a group of signatures independently, but with the same settings
 e2.throttleFuncs = (signatures, delay, message) ->
     for signature in *signatures
-        throttleFunc signature, delay, message
+        e2.throttleFunc signature, delay, message
