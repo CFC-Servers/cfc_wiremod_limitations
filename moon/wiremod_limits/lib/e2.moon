@@ -1,40 +1,47 @@
-import wrapEntWithThrottle from CFCWiremodLimits.Lib
+import rawget, rawset, CurTime, IsValid from _G
 
-CFCWiremodLimits.Lib.E2 = {}
+CFCWiremodLimits.Lib.E2 = {
+    alertDelay: 3
+}
 e2 = CFCWiremodLimits.Lib.E2
-
-_groupID = 0
-groupID = ->
-    _groupID += 1
-    _groupID
 
 -- Impose a throttle on a group of signatures
 -- All signatures share the same throttle
-e2.throttleGroup = (signatures, delay=1, budget=1, refillRate=1, alertFailure=true, shouldSkip=nil, adjustParams=nil) ->
-    groupName = "limit_group_#{groupID!}"
+e2.throttleGroup = (signatures, throttleStruct) ->
+    groupName = "limit_group_#{throttleStruct.id}"
+    {:alertFailure, :delay, :burstBudget, :refillRate} = throttleStruct
 
     funcs = wire_expression2_funcs
     originals = {s, funcs[s][3] for s in *signatures}
 
     makeThrottler = (sig) ->
         id = groupName
-        success = originals[sig]
 
         failure = alertFailure and =>
-            @player.ThrottleAlerts or= {}
+            ply = rawget self, "player"
+            return unless IsValid ply
 
-            now = os.time!
-            lastAlert = @player.ThrottleAlerts[id]
-            return if lastAlert and lastAlert > (now - 3)
+            throttleAlerts = ply.E2ThrottleAlerts
 
-            @player\ChatPrint "'#{sig}' was rate-limited! You must wait #{delay} seconds between executions (or wait for your burst budget to refill)"
-            @player\ChatPrint "(Burst Budget: #{budget} | Refill Rate: #{refillRate}/second)"
-            @player.ThrottleAlerts[id] = now
+            -- Failsafe, should be set on PlayerInitialSpawn
+            if not throttleAlerts
+                ply.E2ThrottleAlerts = {}
 
-        wrapEntWithThrottle id, delay, budget, refillRate, success, failure, shouldSkip, adjustParams
+            now = CurTime!
+            lastAlert = rawget(throttleAlerts, id) or 0
+            return if lastAlert > now - rawget(e2, "alertDelay")
+
+            ply\ChatPrint "'#{sig}' was rate-limited! You must wait #{delay} seconds between executions (or wait for your burst budget to refill)"
+            ply\ChatPrint "(Burst Budget: #{burstBudget} | Refill Rate: #{refillRate}/second)"
+            rawset throttleAlerts, id, now
+
+        throttleStruct.failure = failure if failure
+
+        Throttler\create originals[sig], throttleStruct
 
     funcs[sig][3] = makeThrottler sig for sig in *signatures
 
+-- FIXME: these need to use structs
 -- Throttle an individual signature
 e2.throttleFunc = (signature, delay, message) ->
     e2.throttleGroup {signature}, delay, message
@@ -43,3 +50,6 @@ e2.throttleFunc = (signature, delay, message) ->
 e2.throttleFuncs = (signatures, delay, message) ->
     for signature in *signatures
         e2.throttleFunc signature, delay, message
+
+hook.Add "PlayerInitialSpawn", "WiremodLimits_E2ThrottleSetup", (ply) ->
+    ply.E2ThrottleAlerts = {}
