@@ -1,9 +1,6 @@
 import E2 from CFCWiremodLimits.Lib
 
 do
-    delay = 0.15
-    burstBudget = 500
-
     holoScale = {
         "holoScale(nv)"
         "holoBoneScale(nnv)"
@@ -11,14 +8,16 @@ do
         "holoScaleUnits(nv)"
     }
 
-    shouldSkip = => return true if @player\IsAdmin!
+    with throttle = Throttler\build!
+        .delay = 0.15
+        .refillRate = 5
+        .burstBudget = 750
+        .alertFailure = true
+        .shouldSkip = => return true if @player\IsAdmin!
 
-    E2.throttleGroup holoScale, delay, burstBudget
+        E2.throttleGroup holoScale, throttle
 
 do
-    delay = 0.15
-    burstBudget = 500
-
     holoClip = {
         "holoClip(nnvvn)"
         "holoClip(nvvn)"
@@ -26,14 +25,23 @@ do
         "holoClip(nvve)"
     }
 
-    E2.throttleGroup holoClip, delay, burstBudget
+    with throttle = Throttler\build!
+        .delay = 0.15
+        .burstBudget = 750
+        .alertFailure = true
+        .shouldSkip = => return true if @player\IsAdmin!
+
+        E2.throttleGroup holoClip, throttle
 
 do
-    delay = 0.15
-    burstBudget = 50
-
     use = {
         "use(e:)"
     }
 
-    E2.throttleGroup use, delay, burstBudget
+    with throttle = Throttler\build!
+        .delay = 0.15
+        .burstBudget = 50
+        .alertFailure = true
+        .shouldSkip = => return true if @player\IsAdmin!
+
+        E2.throttleGroup use, throttle
