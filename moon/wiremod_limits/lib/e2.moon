@@ -9,7 +9,7 @@ e2 = CFCWiremodLimits.Lib.E2
 -- All signatures share the same throttle
 e2.throttleGroup = (signatures, throttleStruct) ->
     groupName = "limit_group_#{throttleStruct.id}"
-    {:alertFailure, :delay, :burstBudget, :refillRate} = throttleStruct
+    {:alertFailure, :delay, :budget, :refillRate} = throttleStruct
 
     funcs = wire_expression2_funcs
     originals = {s, funcs[s][3] for s in *signatures}
@@ -31,8 +31,8 @@ e2.throttleGroup = (signatures, throttleStruct) ->
             lastAlert = rawget(throttleAlerts, id) or 0
             return if lastAlert > now - rawget(e2, "alertDelay")
 
-            ply\ChatPrint "'#{sig}' was rate-limited! You must wait #{delay} seconds between executions (or wait for your burst budget to refill)"
-            ply\ChatPrint "(Burst Budget: #{burstBudget} | Refill Rate: #{refillRate}/second)"
+            ply\ChatPrint "'#{sig}' was rate-limited! You must wait #{delay} seconds between executions (or wait for your budget to refill)"
+            ply\ChatPrint "(Budget: #{budget} | Refill Rate: #{refillRate}/second)"
             rawset throttleAlerts, id, now
 
         throttleStruct.failure = failure if failure
