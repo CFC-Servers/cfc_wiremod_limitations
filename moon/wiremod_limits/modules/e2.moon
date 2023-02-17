@@ -10,7 +10,7 @@ do
 
     with throttle = Throttler\build!
         .delay = 0.15
-        .refillRate = 5
+        .refillRate = 35
         .budget = 750
         .alertFailure = true
         .shouldSkip = => return true if @player\IsAdmin!
@@ -27,6 +27,7 @@ do
 
     with throttle = Throttler\build!
         .delay = 0.15
+        .refillRate = 15
         .budget = 750
         .alertFailure = true
         .shouldSkip = => return true if @player\IsAdmin!
