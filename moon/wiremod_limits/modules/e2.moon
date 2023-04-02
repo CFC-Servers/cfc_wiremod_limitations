@@ -46,3 +46,22 @@ do
         .shouldSkip = => return true if @player\IsAdmin!
 
         E2.throttleGroup use, throttle
+
+do
+    tankTrack = {
+        "tanktracktoolCreate(nssva)"
+        "tanktracktoolCopyValues(e:e)"
+        "tanktracktoolGetLinkNames(e:)"
+        "tanktracktoolResetValues(e:)"
+        "tanktracktoolSetLinks(e:t)"
+        "tanktracktoolSetValue(e:t)"
+    }
+
+    with throttle = Throttler\build!
+        .delay = 0.15
+        .refillRate = 1
+        .budget = 50
+        .alertFailure = true
+        .shouldSkip = => return true if @player\IsAdmin!
+
+        E2.throttleGroup tankTrack, throttle
