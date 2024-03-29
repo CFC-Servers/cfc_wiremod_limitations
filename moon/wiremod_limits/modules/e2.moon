@@ -17,6 +17,11 @@ do
 
         E2.throttleGroup holoScale, throttle
 
+    E2.wrapFunction "holoScale(nv)", (og, idx, vec) =>
+        self.holoScales or= {}
+
+        currentScale = self.holoScales[idx]
+
 do
     holoClip = {
         "holoClip(nnvvn)"

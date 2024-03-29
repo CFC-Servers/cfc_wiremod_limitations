@@ -5,6 +5,12 @@ CFCWiremodLimits.Lib.E2 = {
 }
 e2 = CFCWiremodLimits.Lib.E2
 
+e2.wrapFunction = (signature, wrapper) ->
+    base = wire_expression2_funcs[signature]
+    original = base[3]
+
+    base[3] = (self, ...) -> wrapper self, original, ...
+
 -- Impose a throttle on a group of signatures
 -- All signatures share the same throttle
 e2.throttleGroup = (signatures, throttleStruct) ->
