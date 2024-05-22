@@ -58,9 +58,9 @@ do
         ent = args[1]
         return ent\IsRagdoll!
 
-    subjectWrapper = (original, self, args, ...) ->
-        @throw "[CFC] applyForce functions are disabled on ragdolls" if subjectIsRagdoll args
-        original self, args, ...
+    subjectWrapper = (original, runtime, args, ...) ->
+        runtime\forceThrow "[CFC] applyForce functions are disabled on ragdolls" if subjectIsRagdoll args
+        original runtime, args, ...
 
     E2.wrapGroup toEntity, subjectWrapper
 
@@ -71,7 +71,7 @@ do
         "applyOffsetForce(b:vv)"
     }
 
-    subjectWrapper = (_, self) ->
-        @throw "[CFC] applyForce functions are disabled on bones"
+    disabler = (original, runtime, args, ...) ->
+        runtime\forceThrow "[CFC] applyForce functions are disabled on bones"
 
-    E2.wrapGroup toBone, subjectWrapper
+    E2.wrapGroup toBone, disabler
