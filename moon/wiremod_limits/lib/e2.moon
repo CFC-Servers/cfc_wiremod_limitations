@@ -1,4 +1,4 @@
-import rawget, rawset, CurTime, IsValid from _G
+import CurTime, IsValid from _G
 
 CFCWiremodLimits.Lib.E2 = {
     alertDelay: 3
@@ -17,8 +17,8 @@ e2.throttleGroup = (signatures, throttleStruct) ->
     makeThrottler = (sig) ->
         id = groupName
 
-        failure = alertFailure and =>
-            ply = rawget self, "player"
+        failure = =>
+            ply @player
             return unless IsValid ply
 
             throttleAlerts = ply.E2ThrottleAlerts
@@ -28,14 +28,14 @@ e2.throttleGroup = (signatures, throttleStruct) ->
                 ply.E2ThrottleAlerts = {}
 
             now = CurTime!
-            lastAlert = rawget(throttleAlerts, id) or 0
-            return if lastAlert > now - rawget(e2, "alertDelay")
+            lastAlert = throttleAlerts[id] or 0
+            return if lastAlert > now - e2.alertDelay
 
             ply\ChatPrint "'#{sig}' was rate-limited! You must wait #{delay} seconds between executions (or wait for your budget to refill)"
             ply\ChatPrint "(Budget: #{budget} | Refill Rate: #{refillRate}/second)"
-            rawset throttleAlerts, id, now
+            throttleAlerts[id] = now
 
-        throttleStruct.failure = failure if failure
+        throttleStruct.failure = failure if alertFailure
 
         Throttler\create originals[sig], throttleStruct
 
@@ -50,6 +50,23 @@ e2.throttleFunc = (signature, delay, message) ->
 e2.throttleFuncs = (signatures, delay, message) ->
     for signature in *signatures
         e2.throttleFunc signature, delay, message
+
+-- Wraps a set of functions with the same wrapper.
+-- The wrapper receives the original function as the first argument
+-- followed by the arguments passed to the original function
+e2.wrapGroup = (signatures, wrapper) ->
+    funcs = wire_expression2_funcs
+    originals = {}
+
+    for signature in *signatures
+        original = funcs[signature][3]
+        originals[signature] = original
+
+        funcs[signature][3] = (...) ->
+            wrapper original, ...
+
+e2.wrapFunc = (signature, wrapper) ->
+    e2.wrapGroup {signature}, wrapper
 
 hook.Add "PlayerInitialSpawn", "WiremodLimits_E2ThrottleSetup", (ply) ->
     ply.E2ThrottleAlerts = {}

@@ -46,3 +46,32 @@ do
         .shouldSkip = => return true if @player\IsAdmin!
 
         E2.throttleGroup use, throttle
+
+do
+    toEntity = {
+        "applyAngForce(e:a)"
+        "applyForce(e:v)"
+        "applyOffsetForce(e:vv)"
+    }
+
+    subjectIsRagdoll = (args) ->
+        ent = args[1]
+        return ent\IsRagdoll!
+
+    subjectWrapper = (original, self, args, ...) ->
+        @throw "[CFC] applyForce functions are disabled on ragdolls" if subjectIsRagdoll args
+        original self, args, ...
+
+    E2.wrapGroup toEntity, subjectWrapper
+
+do
+    toBone = {
+        "applyAngForce(b:a)"
+        "applyForce(b:v)"
+        "applyOffsetForce(b:vv)"
+    }
+
+    subjectWrapper = (_, self) ->
+        @throw "[CFC] applyForce functions are disabled on bones"
+
+    E2.wrapGroup toBone, subjectWrapper
