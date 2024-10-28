@@ -18,7 +18,7 @@ e2.throttleGroup = (signatures, throttleStruct) ->
         id = groupName
 
         failure = =>
-            ply @player
+            ply = @player
             return unless IsValid ply
 
             throttleAlerts = ply.E2ThrottleAlerts
