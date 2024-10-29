@@ -59,7 +59,7 @@ do
         return ent\IsRagdoll!
 
     subjectWrapper = (original, runtime, args, ...) ->
-        runtime\forceThrow "[CFC] applyForce functions are disabled on ragdolls" if subjectIsRagdoll args
+        runtime\forceThrow "[CFC] applyForce functions are disabled on ragdolls" if not @player\IsAdmin! and subjectIsRagdoll args
         original runtime, args, ...
 
     E2.wrapGroup toEntity, subjectWrapper
@@ -72,6 +72,7 @@ do
     }
 
     disabler = (original, runtime, args, ...) ->
-        runtime\forceThrow "[CFC] applyForce functions are disabled on bones"
+        runtime\forceThrow "[CFC] applyForce functions are disabled on bones" if not @player\IsAdmin!
+        original runtime, args, ...
 
     E2.wrapGroup toBone, disabler
